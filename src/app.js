@@ -1,24 +1,17 @@
 const express = require("express");
 const connectDB = require("./db/db");
 const noteModel = require("./models/note.model");
+const postModel = require("./models/post.model");
+const multer = require("multer");
+const uploadFile = require("./services/storage.service");
 
 const app = express();
 
 app.use(express.json());
 
+const upload = multer({ storage: multer.memoryStorage() });
+
 connectDB();
-
-// const notes = [];
-
-// app.post("/notes", (req, res) => {
-//   console.log(req.body);
-//   notes.push(req.body);
-//   res.status(200).json({ message: "Posted note successfully" });
-// });
-
-// app.get("/notes", (req, res) => {
-//   res.status(200).json({ message: "fetched notes successfully", notes: notes });
-// });
 
 app.post("/notes", async (req, res) => {
   const data = req.body;
@@ -67,6 +60,28 @@ app.patch("/notes/:id", async (req, res) => {
 
   res.status(200).json({
     message: "Updated the note successfully",
+  });
+});
+
+app.post("/create-post", upload.single("image"), async (req, res) => {
+  console.log(req.file);
+
+  const result = await uploadFile(req.file.buffer);
+  console.log(result);
+  await postModel.create({
+    image: result.url,
+    caption: req.body.caption,
+  });
+  res.status(201).json({
+    message: "created post successfully",
+  });
+});
+
+app.get("/posts", async (req, res) => {
+  const post = await postModel.find();
+  res.status(200).json({
+    message: "Fetched successfully",
+    post: post,
   });
 });
 
