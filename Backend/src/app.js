@@ -4,10 +4,12 @@ const noteModel = require("./models/note.model");
 const postModel = require("./models/post.model");
 const multer = require("multer");
 const uploadFile = require("./services/storage.service");
+const cors = require("cors");
 
 const app = express();
 
 app.use(express.json());
+app.use(cors());
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -67,6 +69,7 @@ app.post("/create-post", upload.single("image"), async (req, res) => {
   console.log(req.file);
 
   const result = await uploadFile(req.file.buffer);
+
   console.log(result);
   await postModel.create({
     image: result.url,
